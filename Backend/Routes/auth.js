@@ -6,15 +6,13 @@ const { body, validationResult } = require('express-validator');
 //Create a user using POST "/api/auth/"
 router.post('/', [
     body('id').custom(value => {
-        return User.findOne({where : {id : value}})
-        .then((docs) => {
-            if(docs)
-                return Promise.reject('EMAIL already taken');
+        return User.findOne({id : value}).then((user) => {
+            if(user)
+                return Promise.reject('ID already taken');
         })
     }),
-    body('email').isEmail().custom(value => {
-        return User.findOne({where : {email : value}})
-        .then((docs) => {
+    body('email').isEmail().withMessage("Enter valid email!!").custom(value => {
+        return User.findOne({email : value}).then((docs) => {
             if(docs)
                 return Promise.reject('EMAIL already taken');
         })
