@@ -5,14 +5,23 @@ const { body, validationResult } = require('express-validator');
 
 //Create a user using POST "/api/auth/"
 router.post('/', [
-    body('email' , 'Enter valid email').isEmail(),
-    body('password' , 'Weak password').isLength({min : 8})
+    body('id').custom(value => {
+        return User.findOne({where : {id : value}})
+        .then((docs) => {
+            if(docs)
+                return Promise.reject('EMAIL already taken');
+        })
+    }),
+    body('email').isEmail().custom(value => {
+        return User.findOne({where : {email : value}})
+        .then((docs) => {
+            if(docs)
+                return Promise.reject('EMAIL already taken');
+        })
+    }),
+    body('password').isLength({min : 8}).withMessage("Password should be atleast 8 characters long !!")
 ] ,(req,res)=>
 {
-    //console.log(req.body);
-    //const user = User(req.body);
-    //user.save();
-    //res.json({});
     const errors = validationResult(req);
     if(!errors.isEmpty())
     {
@@ -26,7 +35,6 @@ router.post('/', [
     }).then(user => res.json(user))
     .catch(err => {
         console.log(err);
-        res.json({error : "id or email already taken"});
     });
     //res.send([]);
 })
