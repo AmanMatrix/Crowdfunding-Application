@@ -3,11 +3,6 @@ const { Schema } = mongoose;
 
 const UserSchema = new Schema(
     {
-        id : {
-            type : String,
-            required : true,
-            unique : true
-        },
         name : {
             type : String,
             required : true
@@ -25,6 +20,6 @@ const UserSchema = new Schema(
 )
 const User = mongoose.model('user',UserSchema);
 
-User.createIndexes();
+//User.createIndexes();
 
 module.exports = User;
