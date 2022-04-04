@@ -29,10 +29,17 @@ router.post(
         let user1 = await User.findOne({ email: req.body.email });
         let user2 = await User.findOne({ username: req.body.username });
         if (user1 || user2) {
-            if(user1)
-                res.status(400).json({ error: "Email already in use" });
+            if(user1 && user2)
+            {
+                res.status(400).json({ error: "Email and username already in use" });
+            }
             else
-                res.status(400).json({ error: "Username already in use" });
+            {
+                if(user1)
+                    res.status(400).json({ error: "Email already in use" });
+                else
+                    res.status(400).json({ error: "Username already in use" });
+            }
         } else {
             //   Creating hash from password and adding salt
             const salt = await bcrypt.genSaltSync(10);
