@@ -2,6 +2,10 @@ const express = require("express");
 const User = require("../models/User");
 const router = express.Router();
 const { body, validationResult } = require("express-validator");
+const bcrypt = require("bcryptjs");
+
+const jwt = require("jsonwebtoken");
+const jwt_secret = "shhhhh"; //change it later and store securely
 
 //Create a user using POST "/api/auth/"
 router.post(
@@ -24,18 +28,23 @@ router.post(
       if (user) {
         res.status(400).json({ error: "Email already in use" });
       } else {
+        //   Creating hash from password and adding salt
+        const salt = await bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(req.body.password, salt);
+
+        //   Creating a new user
         user = await User.create({
           name: req.body.name,
           email: req.body.email,
-          password: req.body.password,
+          password: hash,
         });
-
-        res.send(user);
+        // Generating a JWT
+        const authtoken = jwt.sign({ id: user.id }, jwt_secret);
+        res.json({ authtoken });
       }
     } catch {
       return res.status(500).json({ error: "Some error occured" });
     }
-    //res.send([]);
   }
 );
 
