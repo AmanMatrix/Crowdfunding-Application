@@ -9,7 +9,7 @@ const jwt_secret = "shhhhh"; //change it later and store securely
 
 //Create a user using POST "/api/auth/"
 router.post(
-  "/",
+  "/newUser",
   [
     body("email").isEmail().withMessage("Enter valid email!!"),
     body("password")
@@ -62,5 +62,51 @@ router.post(
     }
     }
 );
+
+
+//authenticate a user using POST "/api/auth/login"
+router.post(
+    "/login",
+    [
+      body("email").isEmail().withMessage("Enter valid email"),
+      body("password").exists().withMessage("Password cannot be empty")
+    ],
+    async (req, res) => {
+      //if errors occur, returns bad request
+      const errors = await validationResult(req);
+      if(!errors.isEmpty())
+      {
+          return res.status(400).json({errors: errors.array()});
+      }
+      else
+      {
+          try {
+            let user =await User.findOne({email : req.body.email});
+            if(!user)
+            {
+                return res.status(400).json({errors: "Enter correct credentials"});
+            }
+            else
+            {
+                const passwordCompare = await bcrypt.compare(req.body.password,user.password);
+                if(!passwordCompare)
+                {
+                    return res.status(400).json({errors: "Enter correct credentials"});
+                }
+                else
+                {
+                    const payload = {
+                        id : user.id
+                    }
+                    const authtoken = await jwt.sign({ id: user.id }, jwt_secret);
+                    res.json({ authtoken });
+                }
+            }
+          } catch(error) {
+            return res.status(500).json({ error: "Some error occured" });
+          }
+      }
+      }
+  );
 
 module.exports = router;
